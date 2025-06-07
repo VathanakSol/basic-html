@@ -1,3 +1,23 @@
+# name: Deploy Static Site
+# on: [push]
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
+
+#       - name: Deploy via SSH
+#         uses: appleboy/ssh-action@v1
+#         with:
+#           host: ${{ secrets.LINODE_IP }}
+#           username: ${{ secrets.LINODE_USER }}
+#           key: ${{ secrets.LINODE_SSH_KEY }}
+#           script: |
+#             cd /var/www/static-site
+#             git pull origin main || git clone https://github.com/VathanakSol/basic-html.git .
+#             sudo systemctl restart nginx
+
 name: Deploy Static Site
 on: [push]
 
@@ -14,6 +34,13 @@ jobs:
           username: ${{ secrets.LINODE_USER }}
           key: ${{ secrets.LINODE_SSH_KEY }}
           script: |
-            cd /var/www/static-site
-            git pull origin main || git clone https://github.com/VathanakSol/basic-html.git .
+            # Ensure directory exists and is empty
+            sudo rm -rf /var/www/static-site
+            sudo mkdir -p /var/www/static-site
+            sudo chown -R ${{ secrets.LINODE_USER }}:${{ secrets.LINODE_USER }} /var/www/static-site
+
+            # Clone the repo (fresh copy)
+            git clone https://github.com/VathanakSol/basic-html.git /var/www/static-site
+
+            # Restart Nginx
             sudo systemctl restart nginx
